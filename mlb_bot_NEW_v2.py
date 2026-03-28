@@ -9,8 +9,10 @@ from urllib3 import response
 
 print("RUN CHECK")
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1486915418546376786/IOwWc1mA8g74S9NZqciLPMQ2MYNXbmTbfTaeQJWrobx-kgNHQ-4H_Fn1HH7fYLfPuiG3"
-API_KEY = "259aa0f206efa8fe8ef1469efe093336"
+import os
+
+WEBHOOK_URL = os.environ["DISCORD_WEBHOOK"]
+API_KEY = os.environ["API_KEY"]
 
 def calculate_edge(model_prob, implied_prob):
     return round(model_prob - implied_prob, 2)
