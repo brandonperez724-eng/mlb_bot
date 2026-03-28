@@ -294,7 +294,7 @@ creds_dict = json.loads(os.environ["GOOGLE_CREDENTIALS"])
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 
 client = gspread.authorize(creds)
-sheet = client.open("MLB Betting Tracker").worksheet("PICKS")
+sheet = client.open("MLB Betting Tracker").sheet1
 
 raw_games = get_mlb_games(API_KEY)
 
