@@ -1,4 +1,5 @@
 from flask import Flask, request
+from mlb_bot_NEW_v2 import run_picks, run_grading
 
 app = Flask(__name__)
 
@@ -7,9 +8,9 @@ def run():
     mode = request.args.get("mode")
 
     if mode == "picks":
-        print("running picks")
+        run_picks()
 
     elif mode == "grading":
-        print("running grading")
+        run_grading()
 
     return "OK"
