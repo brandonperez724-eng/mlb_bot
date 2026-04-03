@@ -9,16 +9,19 @@ from urllib3 import response
 
 print("RUN CHECK")
 
-import os
+def run_bot():
+    import os
 
-WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK")
-API_KEY = os.environ.get("ODDS_API_KEY")
+    WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK")
+    API_KEY = os.environ.get("ODDS_API_KEY")
 
-if not WEBHOOK_URL:
-    print("Missing DISCORD_WEBHOOK")
+    if not WEBHOOK_URL:
+        print("Missing DISCORD_WEBHOOK")
 
-if not ODDS_API_KEY:
-    print("Missing ODDS_API_KEY")
+    if not API_KEY:
+        print("Missing ODDS_API_KEY")
+
+    # rest of your logic...
 
 def calculate_edge(model_prob, implied_prob):
     return round(model_prob - implied_prob, 2)
