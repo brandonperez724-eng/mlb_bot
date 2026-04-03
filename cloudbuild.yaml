@@ -10,10 +10,10 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'push',
-      'us-east1-docker.pkg.dev/brandonperez724-eng/mlb-bot/mlb-bot:latest'
+      'us-east4-docker.pkg.dev/brandonperez724-eng/mlb-bot/mlb-bot:latest'
     ]
 
 options:
   logging: CLOUD_LOGGING_ONLY
 
-serviceAccount: 'projects/brandonperez724-eng/serviceAccounts/721299121861-compute@developer.gserviceaccount.com'
+serviceAccount: 'projects/brandonperez724-eng/serviceAccounts/721299121861@cloudbuild.gserviceaccount.com'
