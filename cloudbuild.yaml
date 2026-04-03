@@ -1,1 +1,17 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t',
+      'us-east1-docker.pkg.dev/brandonperez724-eng/mlb-bot/mlb-bot:latest',
+      '.'
+    ]
 
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      'us-east1-docker.pkg.dev/brandonperez724-eng/mlb-bot/mlb-bot:latest'
+    ]
+
+options:
+  logging: CLOUD_LOGGING_ONLY
