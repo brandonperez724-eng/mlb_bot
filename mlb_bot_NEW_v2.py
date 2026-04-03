@@ -12,7 +12,7 @@ print("RUN CHECK")
 import os
 
 WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK")
-ODDS_API_KEY = os.environ.get("ODDS_API_KEY")
+API_KEY = os.environ.get("ODDS_API_KEY")
 
 if not WEBHOOK_URL:
     print("Missing DISCORD_WEBHOOK")
