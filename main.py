@@ -1,5 +1,5 @@
 from flask import Flask, request
-from mlb_bot_NEW_v2 import run_picks, run_grading
+import os
 
 app = Flask(__name__)
 
@@ -8,9 +8,14 @@ def run():
     mode = request.args.get("mode")
 
     if mode == "picks":
-        run_picks()
+        print("running picks")
 
     elif mode == "grading":
-        run_grading()
+        print("running grading")
 
     return "OK"
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
