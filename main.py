@@ -7,6 +7,8 @@ app = Flask(__name__)
 def home():
     mode = request.args.get("mode", "picks")
 
+    print("TRIGGER HIT:", mode)
+
     run_bot(mode)
 
     return "OK"
