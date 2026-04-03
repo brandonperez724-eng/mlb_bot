@@ -15,3 +15,5 @@ steps:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
+serviceAccount: 'projects/brandonperez724-eng/serviceAccounts/721299121861-compute@developer.gserviceaccount.com'
