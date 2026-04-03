@@ -14,6 +14,12 @@ import os
 WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK")
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY")
 
+if not WEBHOOK_URL:
+    print("Missing DISCORD_WEBHOOK")
+
+if not ODDS_API_KEY:
+    print("Missing ODDS_API_KEY")
+
 def calculate_edge(model_prob, implied_prob):
     return round(model_prob - implied_prob, 2)
 
