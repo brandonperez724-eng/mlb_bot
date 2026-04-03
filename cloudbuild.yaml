@@ -3,7 +3,7 @@ steps:
     args: [
       'build',
       '-t',
-      'us-east1-docker.pkg.dev/brandonperez724-eng/mlb-bot/mlb-bot:latest',
+      'us-east4-docker.pkg.dev/brandonperez724-eng/mlb-bot/mlb-bot:latest',
       '.'
     ]
 
