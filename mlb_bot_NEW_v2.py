@@ -11,8 +11,8 @@ print("RUN CHECK")
 
 import os
 
-WEBHOOK_URL = os.environ["DISCORD_WEBHOOK"]
-API_KEY = os.environ["API_KEY"]
+WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK")
+ODDS_API_KEY = os.environ.get("ODDS_API_KEY")
 
 def calculate_edge(model_prob, implied_prob):
     return round(model_prob - implied_prob, 2)
