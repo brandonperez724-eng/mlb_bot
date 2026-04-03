@@ -85,8 +85,16 @@ def run_bot(mode="picks"):
 
     raw_games = get_mlb_games(api_key)
 
-    for game in raw_games:
-        print("Game:", game.get("home_team"), "vs", game.get("away_team"))
+    for game in raw_games[:2]:  # limit for testing
+        message = f"{game.get('away_team')} vs {game.get('home_team')}"
+
+        if webhook:
+            res = requests.post(webhook, json={"content": message})
+            print("Discord status:", res.status_code)
+
+        if sheet:
+            sheet.append_row([message])
+            print("Wrote to sheet")
 
     print("DONE")
 
