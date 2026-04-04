@@ -59,7 +59,7 @@ def odds_to_implied_prob(odds):
 # API
 # =========================
 def get_mlb_games(api_key):
-    url = f"https://api.the-odds-api.com/v4/sports/baseball_mlb/odds/?apiKey={api_key}&regions=us&markets=h2h&oddsFormat=american"
+    url = f"https://api.the-odds-api.com/v4/sports/baseball_mlb/odds?apiKey={api_key}&regions=us&markets=h2h,spreads,totals&oddsFormat=american"
     response = requests.get(url)
     response.raise_for_status()
     return response.json()
