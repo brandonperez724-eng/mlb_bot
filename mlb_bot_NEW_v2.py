@@ -1,73 +1,3 @@
-import sys
-import requests
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import time
-from datetime import datetime, timezone
-import os
-import json
-
-print("RUN CHECK")
-
-
-# =========================
-# ENV + SETUP
-# =========================
-def get_env():
-    webhook = os.environ.get("DISCORD_WEBHOOK")
-    api_key = os.environ.get("ODDS_API_KEY")
-    creds_json = os.environ.get("GOOGLE_CREDENTIALS")
-
-    if not webhook:
-        print("Missing DISCORD_WEBHOOK")
-    if not api_key:
-        print("Missing ODDS_API_KEY")
-    if not creds_json:
-        print("Missing GOOGLE_CREDENTIALS")
-
-    sheet = None
-
-    if creds_json:
-        creds_dict = json.loads(creds_json)
-        scope = [
-            "https://spreadsheets.google.com/feeds",
-            "https://www.googleapis.com/auth/drive"
-        ]
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-        client = gspread.authorize(creds)
-        sheet = client.open("MLB Betting Tracker").sheet1
-
-    return webhook, api_key, sheet
-
-
-# =========================
-# CORE HELPERS
-# =========================
-def calculate_edge(model_prob, implied_prob):
-    return round(model_prob - implied_prob, 2)
-
-
-def odds_to_implied_prob(odds):
-    odds = int(odds)
-    if odds < 0:
-        return round(abs(odds) / (abs(odds) + 100) * 100, 2)
-    else:
-        return round(100 / (odds + 100) * 100, 2)
-
-
-# =========================
-# API
-# =========================
-def get_mlb_games(api_key):
-    url = f"https://api.the-odds-api.com/v4/sports/baseball_mlb/odds?apiKey={api_key}&regions=us&markets=h2h,spreads,totals&oddsFormat=american"
-    response = requests.get(url)
-    response.raise_for_status()
-    return response.json()
-
-
-# =========================
-# MAIN BOT RUNNER
-# =========================
 def run_bot(mode="picks"):
     webhook, api_key, sheet = get_env()
 
@@ -77,39 +7,126 @@ def run_bot(mode="picks"):
 
     print(f"MODE: {mode}")
 
-    if mode == "grade":
-        print("RUNNING GRADING MODE (placeholder)")
-        return
-
-    print("RUNNING PICKS MODE")
-
     raw_games = get_mlb_games(api_key)
 
-    for game in raw_games[:2]:  # limit for testing
-        message = f"{game.get('away_team')} vs {game.get('home_team')}"
+    picks = []
 
-        if webhook:
-            res = requests.post(webhook, json={"content": message})
-            print("Discord status:", res.status_code)
+    for game in raw_games:
+        home = game.get("home_team")
+        away = game.get("away_team")
 
-        if sheet:
-            sheet.append_row([message])
-            print("Wrote to sheet")
+        for book in game.get("bookmakers", []):
+            for market in book.get("markets", []):
+
+                # ======================
+                # MONEYLINE
+                # ======================
+                if market["key"] == "h2h":
+                    outcomes = market["outcomes"]
+
+                    for o in outcomes:
+                        team = o["name"]
+                        odds = o["price"]
+
+                        implied = odds_to_implied_prob(odds)
+
+                        # simple model = slight edge assumption
+                        model_prob = implied + 2  
+
+                        edge = calculate_edge(model_prob, implied)
+
+                        picks.append({
+                            "team": team,
+                            "bet": "ML",
+                            "odds": odds,
+                            "prob": round(model_prob, 1),
+                            "edge": edge
+                        })
+
+                # ======================
+                # SPREADS
+                # ======================
+                elif market["key"] == "spreads":
+                    for o in market["outcomes"]:
+                        team = o["name"]
+                        odds = o["price"]
+                        point = o["point"]
+
+                        implied = odds_to_implied_prob(odds)
+                        model_prob = implied + 2
+                        edge = calculate_edge(model_prob, implied)
+
+                        picks.append({
+                            "team": team,
+                            "bet": f"{point}",
+                            "odds": odds,
+                            "prob": round(model_prob, 1),
+                            "edge": edge
+                        })
+
+                # ======================
+                # TOTALS
+                # ======================
+                elif market["key"] == "totals":
+                    for o in market["outcomes"]:
+                        side = o["name"]  # Over / Under
+                        odds = o["price"]
+                        point = o["point"]
+
+                        implied = odds_to_implied_prob(odds)
+                        model_prob = implied + 2
+                        edge = calculate_edge(model_prob, implied)
+
+                        picks.append({
+                            "team": f"{side} {point}",
+                            "bet": "",
+                            "odds": odds,
+                            "prob": round(model_prob, 1),
+                            "edge": edge
+                        })
+
+    # =========================
+    # FILTER TOP 5
+    # =========================
+    picks = sorted(picks, key=lambda x: x["edge"], reverse=True)[:5]
+
+    # =========================
+    # UNIT LOGIC
+    # =========================
+    def get_units(prob):
+        if prob >= 65:
+            return 2
+        elif prob >= 60:
+            return 1.5
+        else:
+            return 1
+
+    # =========================
+    # FORMAT MESSAGE
+    # =========================
+    today = datetime.now().strftime("%B %d")
+
+    message = f"MLB PICKS — {today}\n\n━━━━━━━━━━━━\n\n"
+
+    for p in picks:
+        units = get_units(p["prob"])
+
+        message += (
+            f"{p['team']} {p['bet']} ({p['odds']})\n"
+            f"Win Prob: {p['prob']}% | {units}u\n\n"
+        )
+
+    message += "━━━━━━━━━━━━"
+
+    # =========================
+    # SEND
+    # =========================
+    if webhook:
+        res = requests.post(webhook, json={"content": message})
+        print("Discord status:", res.status_code)
+
+    if sheet:
+        sheet.append_row([message])
+        print("Wrote to sheet")
 
     print("DONE")
-
-
-# =========================
-# ENTRYPOINT
-# =========================
-def run_picks():
-    run_bot("picks")
-
-
-if __name__ == "__main__":
-    mode = "picks"
-
-    if len(sys.argv) > 1:
-        mode = sys.argv[1]
-
-    run_bot(mode)
