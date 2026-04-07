@@ -1,31 +1,12 @@
-steps:
-  # Build the container image
-  - name: "gcr.io/cloud-builders/docker"
-    args:
-      - "build"
-      - "-t"
-      - "gcr.io/$PROJECT_ID/mlb-bot:$COMMIT_SHA"
-      - "."
-
-  # Push to Container Registry
-  - name: "gcr.io/cloud-builders/docker"
-    args:
-      - "push"
-      - "gcr.io/$PROJECT_ID/mlb-bot:$COMMIT_SHA"
-
-  # Deploy to Cloud Run
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
     args:
       - "run"
       - "deploy"
       - "mlb-bot"
       - "--image=gcr.io/$PROJECT_ID/mlb-bot:$COMMIT_SHA"
-      - "--region=us-central1"
+      - "--region=us-east4"        # ← updated
       - "--platform=managed"
       - "--allow-unauthenticated"
       - "--memory=512Mi"
       - "--timeout=120"
-
-images:
-  - "gcr.io/$PROJECT_ID/mlb-bot:$COMMIT_SHA"
